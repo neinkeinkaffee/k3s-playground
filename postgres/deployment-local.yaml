@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    name: database
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:9-alpine
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: flashcards-credentials
+                key: postgresUser
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: flashcards-credentials
+                key: postgresPassword
+        volumeMounts:
+          - name: postgres-volume-mount
+            mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-volume-mount
+        persistentVolumeClaim:
+          claimName: local-path-pvc
+      restartPolicy: Always
